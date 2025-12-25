@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
  * 获取 loader 文件路径（file:// URL 格式）
  */
 function getLoaderUrl() {
-    const loaderPath = join(__dirname, '..', 'src', 'loader.mjs');
+    const loaderPath = join(__dirname, '..', 'src', 'monorepo-loader.mjs');
     return pathToFileURL(loaderPath).href;
 }
 
