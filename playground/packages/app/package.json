@@ -1,0 +1,8 @@
+{
+    "name": "@playground/app",
+    "version": "1.0.0",
+    "type": "module",
+    "dependencies": {
+        "@playground/utils": "*"
+    }
+}

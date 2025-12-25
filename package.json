@@ -1,0 +1,24 @@
+{
+  "name": "monorepo-cli",
+  "version": "1.0.0",
+  "description": "一个解决 Node.js conditions 全局污染问题的 CLI 工具",
+  "type": "module",
+  "bin": {
+    "mono": "./bin/mono.mjs"
+  },
+  "scripts": {
+    "test": "node test/test.mjs"
+  },
+  "keywords": [
+    "monorepo",
+    "cli",
+    "node",
+    "loader",
+    "workspace"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.19.0"
+  }
+}
