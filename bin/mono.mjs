@@ -5,7 +5,7 @@
  * 透明代理 tsx 命令，注入自定义 loader
  */
 
-import { spawn } from 'node:child_process';
+import spawn from 'cross-spawn';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -40,8 +40,7 @@ function main() {
     // 启动 tsx 进程
     const child = spawn('tsx', tsxArgs, {
         stdio: 'inherit',
-        env: process.env,
-        shell: true
+        env: process.env
     });
 
     // 转发退出码
