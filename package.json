@@ -1,6 +1,6 @@
 {
   "name": "monorepo-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "一个解决 Node.js conditions 全局污染问题的 CLI 工具",
   "type": "module",
   "bin": {
