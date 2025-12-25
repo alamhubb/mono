@@ -215,6 +215,91 @@ monorepo-loader.resolve()
 - 只支持简单字符串格式的 `monorepo` 配置
 - 子路径导入不受影响
 
+## 多层嵌套 Workspace 支持
+
+mono 支持多层嵌套的 workspace 结构：
+
+```
+parserall/                      # 顶层 workspace
+├── package.json                # workspaces: ["slime", "ovs", "cssts"]
+├── slime/                      # 子 workspace
+│   ├── package.json            # workspaces: ["packages/*"]
+│   └── packages/
+│       ├── slime-parser/       # 可以引用 ovs-core
+│       └── subhuti/
+└── ovs/                        # 兄弟 workspace
+    ├── package.json            # workspaces: ["packages/*"]
+    └── packages/
+        └── ovs-core/           # ← slime-parser 可以引用这个
+```
+
+### 查找顺序
+
+1. 从当前目录向上查找所有 workspace
+2. 就近优先：近的 workspace 包优先于远的
+3. 同名包时，近的覆盖远的
+
+### 跨项目引用
+
+在 `slime-parser` 中引用 `ovs-core`：
+
+```js
+import { something } from 'ovs-core';  // mono 会找到并使用源码
+```
+
+### mono vs npm workspaces
+
+mono 和 npm workspaces 是**互补**的，职责不同：
+
+| 工具 | 作用时机 | 功能 |
+|------|---------|------|
+| **npm workspaces** | `npm install` 时 | 管理 node_modules 结构，link 本地包 |
+| **mono** | 运行时 | 将本地包的 `main` 入口替换为 `monorepo` 源码入口 |
+
+**重要区别**：npm workspaces **不支持自动递归嵌套**，需要在顶层显式列出所有路径：
+
+```json
+{
+  "workspaces": [
+    "slime/packages/*",
+    "ovs/packages/*"
+  ]
+}
+```
+
+而 mono **自动递归收集**所有嵌套的 workspace 包，无需额外配置。
+
+### 递归收集机制
+
+mono 像**爬虫**一样自动发现所有包：
+
+```
+mono 启动
+    │
+    ▼
+findAllWorkspaceRoots()           # 向上找所有有 workspaces 的 package.json
+    │
+    ▼
+collectWorkspacePackages()        # 对每个 workspace root
+    │
+    ├─ 解析 workspaces patterns (如 "packages/*")
+    ├─ 找到匹配的目录
+    ├─ 读取每个目录的 package.json
+    │   ├─ 有 name + monorepo 字段 → 加入管理
+    │   └─ 有 workspaces 字段 → 递归收集子包
+    │
+    └─ 继续爬...
+```
+
+**无论 npm workspaces 怎么配置，mono 都能正确工作**：
+
+| 顶层配置 | mono 处理方式 |
+|---------|--------------|
+| `["slime"]` | 找到 slime → 发现它有 workspaces → 递归收集子包 |
+| `["slime/packages/*"]` | 直接收集 slime/packages/* 下的包 |
+
+两种配置最终效果相同，mono 会自己爬一遍所有嵌套结构。
+
 ## License
 
 MIT

@@ -1,7 +1,11 @@
 /**
  * ESM Loader Hooks - 被 register() 加载的 hooks 模块
  * 拦截模块解析，对 workspace 中的本地包应用 monorepo 配置
- * 
+ *
+ * 支持多层嵌套 workspace：
+ * - 从当前目录向上查找所有 workspace
+ * - 就近优先：近的 workspace 包优先于远的
+ *
  * 注意：此文件使用纯 JavaScript，以便 Node.js 原生加载
  */
 
@@ -11,31 +15,33 @@ import { pathToFileURL } from 'node:url';
 
 // 缓存：workspace 包信息
 let workspacePackages = null;
-let workspaceRoot = null;
 
 /**
  * 初始化 workspace 信息
+ * 支持多层嵌套 workspace，从近到远收集所有包
  */
 function initWorkspace() {
     if (workspacePackages !== null) return;
 
     workspacePackages = new Map();
 
-    // 从当前工作目录开始查找 workspace 根目录
+    // 从当前工作目录开始，向上查找所有 workspace
     const cwd = process.cwd();
-    workspaceRoot = findWorkspaceRoot(cwd);
+    const workspaceRoots = findAllWorkspaceRoots(cwd);
 
-    if (!workspaceRoot) return;
-
-    // 同步加载所有 workspace 包信息
-    const packages = getWorkspacePackagesSync(workspaceRoot);
-    workspacePackages = packages;
+    // 从近到远遍历所有 workspace root
+    // 近的优先：如果同名包已存在，不覆盖
+    for (const wsRoot of workspaceRoots) {
+        collectWorkspacePackages(wsRoot, workspacePackages);
+    }
 }
 
 /**
- * 向上查找包含 workspaces 配置的 package.json
+ * 向上查找所有包含 workspaces 配置的 package.json
+ * 返回从近到远排序的 workspace root 列表
  */
-function findWorkspaceRoot(startDir) {
+function findAllWorkspaceRoots(startDir) {
+    const roots = [];
     let currentDir = pathResolve(startDir);
 
     while (currentDir !== dirname(currentDir)) {
@@ -45,7 +51,7 @@ function findWorkspaceRoot(startDir) {
             try {
                 const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
                 if (pkg.workspaces) {
-                    return currentDir;
+                    roots.push(currentDir);
                 }
             } catch {
                 // 忽略解析错误
@@ -55,23 +61,22 @@ function findWorkspaceRoot(startDir) {
         currentDir = dirname(currentDir);
     }
 
-    return null;
+    return roots;
 }
 
 /**
- * 同步获取所有 workspace 包
+ * 收集单个 workspace 的所有包
+ * 包括直接子包和嵌套 workspace 的子包
  */
-function getWorkspacePackagesSync(wsRoot) {
-    const packages = new Map();
-
+function collectWorkspacePackages(wsRoot, packages) {
     const rootPkgPath = join(wsRoot, 'package.json');
-    if (!existsSync(rootPkgPath)) return packages;
+    if (!existsSync(rootPkgPath)) return;
 
     let rootPkg;
     try {
         rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
     } catch {
-        return packages;
+        return;
     }
 
     // 支持两种 workspaces 格式
@@ -93,11 +98,19 @@ function getWorkspacePackagesSync(wsRoot) {
                     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
 
                     if (pkg.name) {
-                        packages.set(pkg.name, {
-                            name: pkg.name,
-                            dir: dir,
-                            monorepoEntry: typeof pkg.monorepo === 'string' ? pkg.monorepo : undefined
-                        });
+                        // 就近优先：如果已存在，不覆盖
+                        if (!packages.has(pkg.name)) {
+                            packages.set(pkg.name, {
+                                name: pkg.name,
+                                dir: dir,
+                                monorepoEntry: typeof pkg.monorepo === 'string' ? pkg.monorepo : undefined
+                            });
+                        }
+
+                        // 如果这个包自己也是 workspace，递归收集它的子包
+                        if (pkg.workspaces) {
+                            collectWorkspacePackages(dir, packages);
+                        }
                     }
                 } catch {
                     // 忽略
@@ -105,8 +118,6 @@ function getWorkspacePackagesSync(wsRoot) {
             }
         }
     }
-
-    return packages;
 }
 
 /**
@@ -122,7 +133,7 @@ function findMatchingDirsSync(root, pattern) {
             const entries = readdirSync(baseDir, { withFileTypes: true });
 
             for (const entry of entries) {
-                if (entry.isDirectory()) {
+                if (entry.isDirectory() && entry.name !== 'node_modules') {
                     dirs.push(join(baseDir, entry.name));
                 }
             }
