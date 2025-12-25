@@ -220,6 +220,9 @@ export async function resolve(specifier, context, nextResolve) {
     const newEntry = join(pkg.dir, pkg.monorepoEntry);
     const newUrl = pathToFileURL(newEntry).href;
 
+    // 日志：显示拦截的包
+    console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
+
     return {
         url: newUrl,
         shortCircuit: true
