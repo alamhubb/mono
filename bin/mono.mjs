@@ -37,8 +37,13 @@ function main() {
         ...args
     ];
 
+    // 获取本地 tsx 路径（使用 monorepo-cli 自身安装的 tsx）
+    // Windows 上需要使用 .cmd 文件
+    const tsxBin = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
+    const tsxPath = join(__dirname, '..', 'node_modules', '.bin', tsxBin);
+
     // 启动 tsx 进程
-    const child = spawn('tsx', tsxArgs, {
+    const child = spawn(tsxPath, tsxArgs, {
         stdio: 'inherit',
         env: process.env
     });
