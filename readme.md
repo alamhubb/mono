@@ -215,6 +215,39 @@ monorepo-loader.resolve()
 - 只支持简单字符串格式的 `monorepo` 配置
 - 子路径导入不受影响
 
+## ⚠️ 重要：编译时依赖 vs 运行时依赖
+
+**mono 只能拦截 Node.js 端的模块解析，无法拦截浏览器端的模块解析！**
+
+### 两个不同的模块解析环境
+
+| 环境 | 解析器 | mono 拦截 | 需要 dist |
+|------|--------|-----------|-----------|
+| **Node.js 端**（编译时） | Node.js ESM loader | ✅ 成功 | ❌ 不需要 |
+| **浏览器端**（运行时） | Vite 自己的解析器 | ❌ 无效 | ✅ 必须有 |
+
+### 具体分类
+
+**编译时依赖**（在 Node.js 中运行，mono 拦截成功，不需要 dist）：
+- Vite 插件（如 `vite-plugin-cssts`、`vite-plugin-ovs`）
+- 编译器（如 `cssts-compiler`、`ovs-compiler`）
+- 编译器的依赖（如 `slime-parser`、`slime-ast`、`subhuti` 等）
+
+**运行时依赖**（在浏览器中运行，需要 dist）：
+- `cssts-ts` - 编译后的代码 `import { cssts } from 'cssts-ts'` 在浏览器运行
+- `ovsjs` - 编译后的代码 `import from 'ovsjs'` 在浏览器运行
+
+### 规律
+
+> **如果一个包的代码最终会在浏览器中执行，它必须有 dist 或正确的 exports 配置。mono loader 只能拦截 Node.js 层面的模块解析。**
+
+### 如何判断
+
+问自己：**这个包的代码是在哪里运行的？**
+
+- 如果是在 `npm run dev` 启动时由 Node.js 加载 → **编译时依赖** → mono 可拦截
+- 如果是编译后注入到浏览器代码中运行 → **运行时依赖** → 必须有 dist
+
 ## 多层嵌套 Workspace 支持
 
 mono 支持多层嵌套的 workspace 结构：
