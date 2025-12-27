@@ -38,17 +38,13 @@ function initWorkspace() {
 
     // 从当前工作目录开始，向上查找所有 workspace
     const cwd = process.cwd();
-    console.log('[mono hooks] 初始化 workspace, cwd:', cwd);
     const workspaceRoots = findAllWorkspaceRoots(cwd);
-    console.log('[mono hooks] 找到 workspace roots:', workspaceRoots);
 
     // 从近到远遍历所有 workspace root
     // 近的优先：如果同名包已存在，不覆盖
     for (const wsRoot of workspaceRoots) {
         collectWorkspacePackages(wsRoot, workspacePackages);
     }
-
-    console.log('[mono hooks] 收集到的包:', Array.from(workspacePackages.keys()));
 }
 
 /**
@@ -235,8 +231,8 @@ export async function resolve(specifier, context, nextResolve) {
     const newEntry = join(pkg.dir, pkg.monorepoEntry);
     const newUrl = pathToFileURL(newEntry).href;
 
-    // 日志：显示拦截的包
-    console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
+    // 日志：显示拦截的包（调试时启用）
+    // console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
 
     return {
         url: newUrl,
