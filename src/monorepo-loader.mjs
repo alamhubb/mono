@@ -15,6 +15,9 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+console.log('[mono] 加载 monorepo-loader.mjs');
+
 // 注册 hooks 模块
 const hooksPath = join(__dirname, 'hooks.mjs');
+console.log('[mono] 注册 hooks:', hooksPath);
 register(pathToFileURL(hooksPath).href, import.meta.url);

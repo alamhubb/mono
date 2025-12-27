@@ -9,9 +9,20 @@
  * 注意：此文件使用纯 JavaScript，以便 Node.js 原生加载
  */
 
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import { resolve as pathResolve, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+// 调试日志文件
+const DEBUG_LOG = join(process.cwd(), 'mono-debug.log');
+
+function debugLog(msg) {
+    try {
+        appendFileSync(DEBUG_LOG, `${new Date().toISOString()} ${msg}\n`);
+    } catch {}
+}
+
+debugLog('[mono hooks] hooks.mjs 已加载');
 
 // 缓存：workspace 包信息
 let workspacePackages = null;
@@ -27,13 +38,17 @@ function initWorkspace() {
 
     // 从当前工作目录开始，向上查找所有 workspace
     const cwd = process.cwd();
+    console.log('[mono hooks] 初始化 workspace, cwd:', cwd);
     const workspaceRoots = findAllWorkspaceRoots(cwd);
+    console.log('[mono hooks] 找到 workspace roots:', workspaceRoots);
 
     // 从近到远遍历所有 workspace root
     // 近的优先：如果同名包已存在，不覆盖
     for (const wsRoot of workspaceRoots) {
         collectWorkspacePackages(wsRoot, workspacePackages);
     }
+    
+    console.log('[mono hooks] 收集到的包:', Array.from(workspacePackages.keys()));
 }
 
 /**
@@ -208,8 +223,15 @@ export async function resolve(specifier, context, nextResolve) {
         return nextResolve(specifier, context);
     }
 
+    // 调试日志：显示所有主入口导入
+    console.log(`[mono] 检查: ${specifier}`);
+
     // 检查是否是 workspace 中的包
     const pkg = workspacePackages?.get(specifier);
+    
+    if (pkg) {
+        console.log(`[mono] 找到包: ${specifier}, monorepoEntry: ${pkg.monorepoEntry}`);
+    }
 
     if (!pkg || !pkg.monorepoEntry) {
         // 不是 workspace 包，或没有 monorepo 配置，使用默认解析
@@ -220,8 +242,13 @@ export async function resolve(specifier, context, nextResolve) {
     const newEntry = join(pkg.dir, pkg.monorepoEntry);
     const newUrl = pathToFileURL(newEntry).href;
 
-    // 日志：显示拦截的包（已禁用）
-    // console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
+    // 日志：显示拦截的包
+    console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
+
+    return {
+        url: newUrl,
+        shortCircuit: true
+    };
 
     return {
         url: newUrl,
