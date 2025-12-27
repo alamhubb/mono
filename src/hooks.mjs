@@ -19,7 +19,7 @@ const DEBUG_LOG = join(process.cwd(), 'mono-debug.log');
 function debugLog(msg) {
     try {
         appendFileSync(DEBUG_LOG, `${new Date().toISOString()} ${msg}\n`);
-    } catch {}
+    } catch { }
 }
 
 debugLog('[mono hooks] hooks.mjs 已加载');
@@ -47,7 +47,7 @@ function initWorkspace() {
     for (const wsRoot of workspaceRoots) {
         collectWorkspacePackages(wsRoot, workspacePackages);
     }
-    
+
     console.log('[mono hooks] 收集到的包:', Array.from(workspacePackages.keys()));
 }
 
@@ -223,15 +223,8 @@ export async function resolve(specifier, context, nextResolve) {
         return nextResolve(specifier, context);
     }
 
-    // 调试日志：显示所有主入口导入
-    console.log(`[mono] 检查: ${specifier}`);
-
     // 检查是否是 workspace 中的包
     const pkg = workspacePackages?.get(specifier);
-    
-    if (pkg) {
-        console.log(`[mono] 找到包: ${specifier}, monorepoEntry: ${pkg.monorepoEntry}`);
-    }
 
     if (!pkg || !pkg.monorepoEntry) {
         // 不是 workspace 包，或没有 monorepo 配置，使用默认解析
@@ -249,9 +242,5 @@ export async function resolve(specifier, context, nextResolve) {
         url: newUrl,
         shortCircuit: true
     };
-
-    return {
-        url: newUrl,
-        shortCircuit: true
-    };
 }
+

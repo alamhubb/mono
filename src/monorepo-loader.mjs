@@ -2,9 +2,16 @@
  * ESM Loader 入口
  * 使用 register() API 注册自定义 hooks
  * 
- * 用法: node --import=./src/loader.mjs app.js
+ * 用法: node --import=./src/monorepo-loader.mjs app.ts
  * 
- * 注意：此文件使用纯 JavaScript，以便 Node.js 原生加载
+ * 功能：
+ * 1. 注册 tsx 的 ESM loader 以支持 TypeScript 编译
+ * 2. 注册 mono 的 resolve hooks 以拦截包名解析到源码
+ * 
+ * 注册顺序说明：
+ * Node.js loader hooks 使用洋葱模型，后注册的先被调用。
+ * 我们希望 mono 先拦截包名，再由 tsx 编译 .ts 文件。
+ * 所以先注册 tsx，再注册 mono（后注册先调用）。
  */
 
 import { register } from 'node:module';
@@ -17,7 +24,14 @@ const __dirname = dirname(__filename);
 
 console.log('[mono] 加载 monorepo-loader.mjs');
 
-// 注册 hooks 模块
+// 1. 先注册 tsx 的 ESM loader（TypeScript 编译）
+console.log('[mono] 注册 tsx ESM loader...');
+await import('tsx/esm');
+
+// 2. 再注册 mono 的 resolve hooks（包名拦截）
+// 后注册先调用，所以 mono 会先于 tsx 处理 resolve
 const hooksPath = join(__dirname, 'hooks.mjs');
-console.log('[mono] 注册 hooks:', hooksPath);
+console.log('[mono] 注册 mono hooks:', hooksPath);
 register(pathToFileURL(hooksPath).href, import.meta.url);
+
+

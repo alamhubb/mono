@@ -2,7 +2,11 @@
 
 /**
  * mono CLI 入口
- * 透明代理 tsx 命令，注入自定义 loader
+ * 直接代理 node 命令，注入自定义 loader
+ * 
+ * monorepo-loader.mjs 会自动：
+ * 1. 注册 tsx ESM loader（TypeScript 支持）
+ * 2. 注册 mono resolve hooks（包名拦截）
  */
 
 import spawn from 'cross-spawn';
@@ -30,20 +34,15 @@ function main() {
     // 获取 loader 路径
     const loaderUrl = getLoaderUrl();
 
-    // 构造 tsx 命令参数
-    // 注入 monorepo loader，其他参数原样传递给 tsx
-    const tsxArgs = [
+    // 构造 node 命令参数
+    // 注入 monorepo loader（它会自动加载 tsx），其他参数原样传递给 node
+    const nodeArgs = [
         `--import=${loaderUrl}`,
         ...args
     ];
 
-    // 获取本地 tsx 路径（使用 monorepo-cli 自身安装的 tsx）
-    // Windows 上需要使用 .cmd 文件
-    const tsxBin = process.platform === 'win32' ? 'tsx.cmd' : 'tsx';
-    const tsxPath = join(__dirname, '..', 'node_modules', '.bin', tsxBin);
-
-    // 启动 tsx 进程
-    const child = spawn(tsxPath, tsxArgs, {
+    // 启动 node 进程
+    const child = spawn('node', nodeArgs, {
         stdio: 'inherit',
         env: process.env
     });
@@ -55,9 +54,10 @@ function main() {
 
     // 处理错误
     child.on('error', (err) => {
-        console.error('mono: 无法启动 tsx 进程', err.message);
+        console.error('mono: 无法启动 node 进程', err.message);
         process.exit(1);
     });
 }
 
 main();
+
