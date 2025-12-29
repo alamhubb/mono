@@ -2,7 +2,10 @@
 
 /**
  * mono CLI 入口
- * 直接代理 node 命令，注入自定义 loader
+ * 
+ * 命令:
+ * - mono <file>    运行 TypeScript 文件，注入自定义 loader
+ * - mono i         递归安装所有嵌套 monorepo 的依赖
  * 
  * monorepo-loader.mjs 会自动：
  * 1. 注册 tsx ESM loader（TypeScript 支持）
@@ -11,7 +14,8 @@
 
 import spawn from 'cross-spawn';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,39 +29,188 @@ function getLoaderUrl() {
 }
 
 /**
- * 主函数
+ * 递归查找所有嵌套的 monorepo 目录
  */
-function main() {
-    // 获取传递给 mono 的所有参数
-    const args = process.argv.slice(2);
+function findAllMonorepos(startDir) {
+    const monorepos = [];
 
-    // 获取 loader 路径
+    function scanDir(dir) {
+        const pkgPath = join(dir, 'package.json');
+
+        if (existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+
+                // 如果有 workspaces 配置，这是一个 monorepo
+                if (pkg.workspaces) {
+                    monorepos.push(dir);
+
+                    // 继续查找嵌套的 workspace
+                    let patterns = [];
+                    if (Array.isArray(pkg.workspaces)) {
+                        patterns = pkg.workspaces;
+                    } else if (pkg.workspaces?.packages) {
+                        patterns = pkg.workspaces.packages;
+                    }
+
+                    for (const pattern of patterns) {
+                        const dirs = findMatchingDirs(dir, pattern);
+                        for (const subDir of dirs) {
+                            scanDir(subDir);
+                        }
+                    }
+                }
+            } catch {
+                // 忽略解析错误
+            }
+        }
+    }
+
+    scanDir(startDir);
+    return monorepos;
+}
+
+/**
+ * 查找匹配 pattern 的目录
+ */
+function findMatchingDirs(root, pattern) {
+    const dirs = [];
+
+    if (pattern.endsWith('/*')) {
+        const baseDir = join(root, pattern.slice(0, -2));
+        if (existsSync(baseDir)) {
+            const entries = readdirSync(baseDir, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.isDirectory() && entry.name !== 'node_modules') {
+                    dirs.push(join(baseDir, entry.name));
+                }
+            }
+        }
+    } else if (pattern.endsWith('/**')) {
+        const baseDir = join(root, pattern.slice(0, -3));
+        findDirsRecursive(baseDir, dirs);
+    } else {
+        const dir = join(root, pattern);
+        if (existsSync(dir)) {
+            dirs.push(dir);
+        }
+    }
+
+    return dirs;
+}
+
+/**
+ * 递归查找目录
+ */
+function findDirsRecursive(dir, result) {
+    if (!existsSync(dir)) return;
+
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        if (entry.isDirectory() && entry.name !== 'node_modules') {
+            const subDir = join(dir, entry.name);
+            result.push(subDir);
+            findDirsRecursive(subDir, result);
+        }
+    }
+}
+
+/**
+ * 在指定目录执行 npm install
+ */
+async function runNpmInstall(dir) {
+    return new Promise((resolve, reject) => {
+        console.log(`\n[mono i] Installing in: ${dir}`);
+
+        const child = spawn('npm', ['install'], {
+            cwd: dir,
+            stdio: 'inherit'
+        });
+
+        child.on('close', (code) => {
+            if (code === 0) {
+                resolve();
+            } else {
+                reject(new Error(`npm install failed with code ${code}`));
+            }
+        });
+
+        child.on('error', reject);
+    });
+}
+
+/**
+ * mono i - 递归安装所有嵌套 monorepo 的依赖
+ */
+async function installCommand() {
+    const cwd = process.cwd();
+    console.log('[mono i] 扫描嵌套 monorepo...');
+
+    const monorepos = findAllMonorepos(cwd);
+
+    if (monorepos.length === 0) {
+        console.log('[mono i] 未找到任何 monorepo');
+        return;
+    }
+
+    console.log(`[mono i] 找到 ${monorepos.length} 个 monorepo:`);
+    for (const dir of monorepos) {
+        console.log(`  - ${dir}`);
+    }
+
+    // 从外到内安装（父级先安装）
+    for (const dir of monorepos) {
+        try {
+            await runNpmInstall(dir);
+        } catch (err) {
+            console.error(`[mono i] 安装失败: ${dir}`, err.message);
+            process.exit(1);
+        }
+    }
+
+    console.log('\n[mono i] ✅ 所有 monorepo 安装完成！');
+}
+
+/**
+ * 运行 TypeScript 文件
+ */
+function runCommand(args) {
     const loaderUrl = getLoaderUrl();
 
-    // 构造 node 命令参数
-    // 注入 monorepo loader（它会自动加载 tsx），其他参数原样传递给 node
     const nodeArgs = [
         `--import=${loaderUrl}`,
         ...args
     ];
 
-    // 启动 node 进程
     const child = spawn('node', nodeArgs, {
         stdio: 'inherit',
         env: process.env
     });
 
-    // 转发退出码
     child.on('close', (code) => {
         process.exit(code ?? 0);
     });
 
-    // 处理错误
     child.on('error', (err) => {
         console.error('mono: 无法启动 node 进程', err.message);
         process.exit(1);
     });
 }
 
-main();
+/**
+ * 主函数
+ */
+async function main() {
+    const args = process.argv.slice(2);
 
+    // 检查是否是 install 命令
+    if (args[0] === 'i' || args[0] === 'install') {
+        await installCommand();
+        return;
+    }
+
+    // 否则运行 TypeScript 文件
+    runCommand(args);
+}
+
+main();
