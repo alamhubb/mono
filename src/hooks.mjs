@@ -224,6 +224,7 @@ export async function resolve(specifier, context, nextResolve) {
 
     if (!pkg || !pkg.monorepoEntry) {
         // 不是 workspace 包，或没有 monorepo 配置，使用默认解析
+        debugLog(`[mono] 跳过: ${specifier} (pkg=${!!pkg}, monorepoEntry=${pkg?.monorepoEntry})`);
         return nextResolve(specifier, context);
     }
 
@@ -231,8 +232,8 @@ export async function resolve(specifier, context, nextResolve) {
     const newEntry = join(pkg.dir, pkg.monorepoEntry);
     const newUrl = pathToFileURL(newEntry).href;
 
-    // 日志：显示拦截的包（调试时启用）
-    // console.log(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
+    // 日志：显示拦截的包
+    debugLog(`[mono] 拦截: ${specifier} -> ${pkg.monorepoEntry}`);
 
     return {
         url: newUrl,
