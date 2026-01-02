@@ -30,10 +30,13 @@ mono --no-cache app.ts   # 参数原样传递给 tsx
 ```json
 {
   "name": "@my/utils",
+  "type": "module",
   "main": "./dist/index.js",
   "monorepo": "./src/index.ts"
 }
 ```
+
+> ⚠️ **重要**：`type: "module"` 是**必须的**！mono 使用 Node.js ESM Loader Hooks，只支持 ESM 模块系统。
 
 ### 效果
 
