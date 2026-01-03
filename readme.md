@@ -298,7 +298,7 @@ mono 和 npm workspaces 是**互补**的，职责不同：
 {
   "workspaces": [
     "slime/packages/*",
-    "ovs/packages/*"
+    "ovsjs/packages/*"
   ]
 }
 ```
