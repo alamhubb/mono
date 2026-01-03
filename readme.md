@@ -32,7 +32,7 @@ mono --no-cache app.ts   # 参数原样传递给 tsx
   "name": "@my/utils",
   "type": "module",
   "main": "./dist/index.js",
-  "monorepo": "./index.ts"
+  "monorepo": "./src/index.ts"
 }
 ```
 
@@ -209,7 +209,7 @@ monorepo-loader.resolve()
 
 1. **透明套壳**：`mono` 只是 `tsx` 的代理，参数原样传递
 2. **最小干预**：只拦截模块解析，不做其他处理
-3. **简单配置**：只支持简单字符串格式 `"monorepo": "./index.ts"`
+3. **简单配置**：只支持简单字符串格式 `"monorepo": "./src/index.ts"`
 4. **子路径不处理**：只处理主入口（`@my/utils`），子路径（`@my/utils/helper`）走默认逻辑
 
 ## 限制
