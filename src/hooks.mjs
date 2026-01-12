@@ -69,6 +69,11 @@ function findProjectRoot(startDir) {
  * 递归向下查找所有有 package.json 的项目
  */
 function findAllPackages(rootDir, packages) {
+    // 跳过路径中包含 node_modules 的目录
+    if (rootDir.includes('node_modules')) {
+        return;
+    }
+
     const pkgPath = join(rootDir, 'package.json');
 
     if (existsSync(pkgPath)) {
@@ -97,7 +102,7 @@ function findAllPackages(rootDir, packages) {
         const entries = readdirSync(rootDir, { withFileTypes: true });
 
         for (const entry of entries) {
-            if (entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
+            if (entry.isDirectory() && !entry.name.startsWith('.')) {
                 findAllPackages(join(rootDir, entry.name), packages);
             }
         }
