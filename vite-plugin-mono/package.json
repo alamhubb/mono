@@ -1,0 +1,22 @@
+{
+    "name": "vite-plugin-mono",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./src/index.ts",
+    "monorepo": "./src/index.ts",
+    "license": "MIT",
+    "description": "Vite plugin for monorepo - auto-discover local packages and use source code",
+    "keywords": [
+        "vite",
+        "vite-plugin",
+        "monorepo",
+        "workspace"
+    ],
+    "author": "alamhubb",
+    "peerDependencies": {
+        "vite": "^5.0.0 || ^6.0.0"
+    },
+    "devDependencies": {
+        "vite": "^6.3.5"
+    }
+}
