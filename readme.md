@@ -219,16 +219,17 @@ monorepo-loader.resolve()
 
 ## 设计原则
 
-1. **透明套壳**：`mono` 只是 `tsx` 的代理，参数原样传递
+1. **零配置**：自动扫描整个项目，无需任何配置
 2. **最小干预**：只拦截模块解析，不做其他处理
-3. **简单配置**：只支持简单字符串格式 `"monorepo": "./src/index.ts"`
+3. **智能默认**：默认使用 `src/index.ts`，支持 `monorepo` 字段自定义
 4. **子路径不处理**：只处理主入口（`@my/utils`），子路径（`@my/utils/helper`）走默认逻辑
+5. **完全透明**：使用者和其他开发者无需知道 mono 的存在
 
 ## 限制
 
-- 只支持 npm workspaces 配置
 - 只支持简单字符串格式的 `monorepo` 配置
-- 子路径导入不受影响
+- 子路径导入不受影响，走默认解析
+- 需要项目有明确的根目录标识（`.idea` / `.vscode` / `package.json`）
 
 ## ⚠️ 重要：编译时依赖 vs 运行时依赖
 
@@ -263,61 +264,56 @@ monorepo-loader.resolve()
 - 如果是在 `npm run dev` 启动时由 Node.js 加载 → **编译时依赖** → mono 可拦截
 - 如果是编译后注入到浏览器代码中运行 → **运行时依赖** → 必须有 dist
 
-## 多层嵌套 Workspace 支持
+## 自动包发现机制
 
-mono 支持多层嵌套的 workspace 结构：
+mono 采用全新的**自动扫描**机制，无需任何 workspaces 配置：
 
 ```
-parserall/                      # 顶层 workspace
-├── package.json                # workspaces: ["slime", "ovs", "cssts"]
-├── slime/                      # 子 workspace
-│   ├── package.json            # workspaces: ["packages/*"]
+parserall/                      # 项目根目录（有 .idea）
+├── .idea/                      # 根目录标识
+├── slime/
 │   └── packages/
-│       ├── slime-parser/       # 可以引用 ovs-core
+│       ├── slime-parser/
+│       │   └── package.json    # ← 自动发现并注册
 │       └── subhuti/
-└── ovs/                        # 兄弟 workspace
-    ├── package.json            # workspaces: ["packages/*"]
+│           └── package.json    # ← 自动发现并注册
+└── ovs/
     └── packages/
-        └── ovs-core/           # ← slime-parser 可以引用这个
+        └── ovs-core/
+            └── package.json    # ← 自动发现并注册
 ```
 
-### 查找顺序
+### 查找逻辑
 
-1. 从当前目录向上查找所有 workspace
-2. 就近优先：近的 workspace 包优先于远的
-3. 同名包时，近的覆盖远的
+1. **向上查找根目录**：找最顶层有 `.idea` / `.vscode` / `package.json` 的目录
+2. **递归扫描**：从根目录向下递归扫描所有目录（跳过 `node_modules` 和 `.` 开头的）
+3. **自动注册**：发现 `package.json` 就读取 `name` 字段并注册
+4. **智能入口**：默认 `src/index.ts`，有 `monorepo` 配置就用配置的
 
 ### 跨项目引用
 
 在 `slime-parser` 中引用 `ovs-core`：
 
 ```js
-import { something } from 'ovs-core';  // mono 会找到并使用源码
+import { something } from 'ovs-core';  // mono 会自动找到并使用源码
 ```
+
+无需任何配置，mono 自动处理！
 
 ### mono vs npm workspaces
 
-mono 和 npm workspaces 是**互补**的，职责不同：
+mono 和 npm workspaces **完全独立**：
 
-| 工具 | 作用时机 | 功能 |
-|------|---------|------|
-| **npm workspaces** | `npm install` 时 | 管理 node_modules 结构，link 本地包 |
-| **mono** | 运行时 | 将本地包的 `main` 入口替换为 `monorepo` 源码入口 |
+| 工具 | 作用时机 | 功能 | 是否必需 |
+|------|---------|------|---------|
+| **npm workspaces** | `npm install` 时 | 管理 node_modules 结构，link 本地包 | 可选 |
+| **mono** | 运行时 | 拦截模块解析，使用源码入口 | 开发时推荐 |
 
-**重要区别**：npm workspaces **不支持自动递归嵌套**，需要在顶层显式列出所有路径：
+**核心区别**：
+- npm workspaces：需要配置，用于依赖管理
+- mono：零配置，自动扫描所有包，无论是否使用 workspaces
 
-```json
-{
-  "workspaces": [
-    "slime/packages/*",
-    "ovsjs/packages/*"
-  ]
-}
-```
-
-而 mono **自动递归收集**所有嵌套的 workspace 包，无需额外配置。
-
-### 递归收集机制
+### 递归扫描机制
 
 mono 像**爬虫**一样自动发现所有包：
 
@@ -325,28 +321,21 @@ mono 像**爬虫**一样自动发现所有包：
 mono 启动
     │
     ▼
-findAllWorkspaceRoots()           # 向上找所有有 workspaces 的 package.json
-    │
+findProjectRoot()                 # 向上找最顶层根目录
+    │                             # 找有 .idea / .vscode / package.json 的
     ▼
-collectWorkspacePackages()        # 对每个 workspace root
+findAllPackages(根目录)           # 递归向下扫描
     │
-    ├─ 解析 workspaces patterns (如 "packages/*")
-    ├─ 找到匹配的目录
-    ├─ 读取每个目录的 package.json
-    │   ├─ 有 name + monorepo 字段 → 加入管理
-    │   └─ 有 workspaces 字段 → 递归收集子包
+    ├─ 找到 package.json
+    │   ├─ 读取 name 字段
+    │   └─ 注册：默认 src/index.ts，或用 monorepo 配置
     │
-    └─ 继续爬...
+    ├─ 递归扫描子目录（跳过 node_modules 和 .xxx）
+    │
+    └─ 继续扫描...
 ```
 
-**无论 npm workspaces 怎么配置，mono 都能正确工作**：
-
-| 顶层配置 | mono 处理方式 |
-|---------|--------------|
-| `["slime"]` | 找到 slime → 发现它有 workspaces → 递归收集子包 |
-| `["slime/packages/*"]` | 直接收集 slime/packages/* 下的包 |
-
-两种配置最终效果相同，mono 会自己爬一遍所有嵌套结构。
+**完全零配置**：只要有 `package.json` 的 `name` 字段，就会被自动发现和注册！
 
 ## License
 
