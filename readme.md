@@ -229,7 +229,7 @@ monorepo-loader.resolve()
 
 - 只支持简单字符串格式的 `monorepo` 配置
 - 子路径导入不受影响，走默认解析
-- 需要项目有明确的根目录标识（`.idea` / `.vscode` / `package.json`）
+- 需要项目有明确的根目录标识（`.git` / `.idea` / `.vscode` / `package.json`）
 
 ## ⚠️ 重要：编译时依赖 vs 运行时依赖
 
@@ -269,8 +269,9 @@ monorepo-loader.resolve()
 mono 采用全新的**自动扫描**机制，无需任何 workspaces 配置：
 
 ```
-parserall/                      # 项目根目录（有 .idea）
-├── .idea/                      # 根目录标识
+parserall/                      # 项目根目录
+├── .git/                       # 根目录标识之一
+├── .idea/                      # 根目录标识之一
 ├── slime/
 │   └── packages/
 │       ├── slime-parser/
@@ -285,7 +286,7 @@ parserall/                      # 项目根目录（有 .idea）
 
 ### 查找逻辑
 
-1. **向上查找根目录**：找最顶层有 `.idea` / `.vscode` / `package.json` 的目录
+1. **向上查找根目录**：找最顶层有 `.git` / `.idea` / `.vscode` / `package.json` 的目录
 2. **递归扫描**：从根目录向下递归扫描所有目录（跳过 `node_modules` 和 `.` 开头的）
 3. **自动注册**：发现 `package.json` 就读取 `name` 字段并注册
 4. **智能入口**：默认 `src/index.ts`，有 `monorepo` 配置就用配置的
@@ -322,7 +323,7 @@ mono 启动
     │
     ▼
 findProjectRoot()                 # 向上找最顶层根目录
-    │                             # 找有 .idea / .vscode / package.json 的
+    │                             # 找有 .git / .idea / .vscode / package.json 的
     ▼
 findAllPackages(根目录)           # 递归向下扫描
     │
