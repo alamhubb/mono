@@ -16,7 +16,7 @@ import { resolve as pathResolve, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 // 根目录标识符列表
-const ROOT_MARKERS = ['.idea', '.vscode', 'package.json'];
+const ROOT_MARKERS = ['.idea', '.vscode', '.git', 'package.json'];
 
 // 默认源码入口
 const DEFAULT_ENTRY = './src/index.ts';
@@ -71,6 +71,7 @@ function findProjectRoot(startDir) {
 function findAllPackages(rootDir, packages) {
     // 跳过路径中包含 node_modules 的目录
     if (rootDir.includes('node_modules')) {
+        debugLog(`[mono] 跳过 node_modules: ${rootDir}`);
         return;
     }
 
