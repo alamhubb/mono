@@ -25,6 +25,8 @@ const DEFAULT_ENTRY = './src/index.ts';
 const DEBUG_LOG = join(process.cwd(), 'mono-debug.log');
 
 function debugLog(msg) {
+    // 同时输出到控制台和文件
+    console.log(msg);
     try {
         appendFileSync(DEBUG_LOG, `${new Date().toISOString()} ${msg}\n`);
     } catch { }
