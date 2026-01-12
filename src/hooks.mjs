@@ -1,17 +1,25 @@
 /**
  * ESM Loader Hooks - 被 register() 加载的 hooks 模块
- * 拦截模块解析，对 workspace 中的本地包应用 monorepo 配置
+ * 拦截模块解析，对项目中的本地包应用源码入口
  *
- * 支持多层嵌套 workspace：
- * - 从当前目录向上查找所有 workspace
- * - 就近优先：近的 workspace 包优先于远的
+ * 新逻辑：
+ * - 向上查找最顶层的包含 .idea / .vscode / package.json 的目录作为根目录
+ * - 从根目录递归向下查找所有有 package.json 的项目
+ * - 根据 package.json 的 name 字段注册
+ * - 默认使用 src/index.ts，如果配置了 monorepo 字段则使用配置的
  *
  * 注意：此文件使用纯 JavaScript，以便 Node.js 原生加载
  */
 
-import { readFileSync, existsSync, readdirSync, writeFileSync, appendFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, appendFileSync } from 'node:fs';
 import { resolve as pathResolve, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+// 根目录标识符列表
+const ROOT_MARKERS = ['.idea', '.vscode', 'package.json'];
+
+// 默认源码入口
+const DEFAULT_ENTRY = './src/index.ts';
 
 // 调试日志文件
 const DEBUG_LOG = join(process.cwd(), 'mono-debug.log');
@@ -28,155 +36,100 @@ debugLog('[mono hooks] hooks.mjs 已加载');
 let workspacePackages = null;
 
 /**
+ * 检查目录是否包含根目录标识
+ */
+function hasRootMarker(dir) {
+    for (const marker of ROOT_MARKERS) {
+        if (existsSync(join(dir, marker))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 向上查找最顶层的根目录
+ * 找到最顶层的包含 .idea / .vscode / package.json 的目录
+ */
+function findProjectRoot(startDir) {
+    let currentDir = pathResolve(startDir);
+    let topMostRoot = null;
+
+    while (currentDir !== dirname(currentDir)) {
+        if (hasRootMarker(currentDir)) {
+            topMostRoot = currentDir;
+        }
+        currentDir = dirname(currentDir);
+    }
+
+    return topMostRoot;
+}
+
+/**
+ * 递归向下查找所有有 package.json 的项目
+ */
+function findAllPackages(rootDir, packages) {
+    const pkgPath = join(rootDir, 'package.json');
+
+    if (existsSync(pkgPath)) {
+        try {
+            const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+
+            if (pkg.name) {
+                // 确定入口：优先使用 monorepo 配置，否则使用默认值
+                const entry = typeof pkg.monorepo === 'string' ? pkg.monorepo : DEFAULT_ENTRY;
+
+                packages.set(pkg.name, {
+                    name: pkg.name,
+                    dir: rootDir,
+                    monorepoEntry: entry
+                });
+
+                debugLog(`[mono] 发现包: ${pkg.name} -> ${entry}`);
+            }
+        } catch {
+            // 忽略解析错误
+        }
+    }
+
+    // 递归查找子目录
+    try {
+        const entries = readdirSync(rootDir, { withFileTypes: true });
+
+        for (const entry of entries) {
+            if (entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
+                findAllPackages(join(rootDir, entry.name), packages);
+            }
+        }
+    } catch {
+        // 忽略读取错误
+    }
+}
+
+/**
  * 初始化 workspace 信息
- * 支持多层嵌套 workspace，从近到远收集所有包
+ * 从根目录递归向下收集所有包
  */
 function initWorkspace() {
     if (workspacePackages !== null) return;
 
     workspacePackages = new Map();
 
-    // 从当前工作目录开始，向上查找所有 workspace
+    // 从当前工作目录开始，向上找最顶层根目录
     const cwd = process.cwd();
-    const workspaceRoots = findAllWorkspaceRoots(cwd);
+    const projectRoot = findProjectRoot(cwd);
 
-    // 从近到远遍历所有 workspace root
-    // 近的优先：如果同名包已存在，不覆盖
-    for (const wsRoot of workspaceRoots) {
-        collectWorkspacePackages(wsRoot, workspacePackages);
-    }
-}
-
-/**
- * 向上查找所有包含 workspaces 配置的 package.json
- * 返回从近到远排序的 workspace root 列表
- */
-function findAllWorkspaceRoots(startDir) {
-    const roots = [];
-    let currentDir = pathResolve(startDir);
-
-    while (currentDir !== dirname(currentDir)) {
-        const pkgPath = join(currentDir, 'package.json');
-
-        if (existsSync(pkgPath)) {
-            try {
-                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-                if (pkg.workspaces) {
-                    roots.push(currentDir);
-                }
-            } catch {
-                // 忽略解析错误
-            }
-        }
-
-        currentDir = dirname(currentDir);
-    }
-
-    return roots;
-}
-
-/**
- * 收集单个 workspace 的所有包
- * 包括直接子包和嵌套 workspace 的子包
- */
-function collectWorkspacePackages(wsRoot, packages) {
-    const rootPkgPath = join(wsRoot, 'package.json');
-    if (!existsSync(rootPkgPath)) return;
-
-    let rootPkg;
-    try {
-        rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf-8'));
-    } catch {
+    if (!projectRoot) {
+        debugLog('[mono] 未找到项目根目录');
         return;
     }
 
-    // 支持两种 workspaces 格式
-    let patterns = [];
-    if (Array.isArray(rootPkg.workspaces)) {
-        patterns = rootPkg.workspaces;
-    } else if (rootPkg.workspaces?.packages) {
-        patterns = rootPkg.workspaces.packages;
-    }
+    debugLog(`[mono] 项目根目录: ${projectRoot}`);
 
-    for (const pattern of patterns) {
-        const dirs = findMatchingDirsSync(wsRoot, pattern);
+    // 从根目录递归向下查找所有包
+    findAllPackages(projectRoot, workspacePackages);
 
-        for (const dir of dirs) {
-            const pkgPath = join(dir, 'package.json');
-
-            if (existsSync(pkgPath)) {
-                try {
-                    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-
-                    if (pkg.name) {
-                        // 就近优先：如果已存在，不覆盖
-                        if (!packages.has(pkg.name)) {
-                            packages.set(pkg.name, {
-                                name: pkg.name,
-                                dir: dir,
-                                monorepoEntry: typeof pkg.monorepo === 'string' ? pkg.monorepo : undefined
-                            });
-                        }
-
-                        // 如果这个包自己也是 workspace，递归收集它的子包
-                        if (pkg.workspaces) {
-                            collectWorkspacePackages(dir, packages);
-                        }
-                    }
-                } catch {
-                    // 忽略
-                }
-            }
-        }
-    }
-}
-
-/**
- * 同步查找匹配的目录
- */
-function findMatchingDirsSync(root, pattern) {
-    const dirs = [];
-
-    if (pattern.endsWith('/*')) {
-        const baseDir = join(root, pattern.slice(0, -2));
-
-        if (existsSync(baseDir)) {
-            const entries = readdirSync(baseDir, { withFileTypes: true });
-
-            for (const entry of entries) {
-                if (entry.isDirectory() && entry.name !== 'node_modules') {
-                    dirs.push(join(baseDir, entry.name));
-                }
-            }
-        }
-    } else if (pattern.endsWith('/**')) {
-        const baseDir = join(root, pattern.slice(0, -3));
-        findDirsRecursiveSync(baseDir, dirs);
-    } else {
-        const dir = join(root, pattern);
-        if (existsSync(dir)) {
-            dirs.push(dir);
-        }
-    }
-
-    return dirs;
-}
-
-/**
- * 递归查找目录
- */
-function findDirsRecursiveSync(dir, result) {
-    if (!existsSync(dir)) return;
-
-    const entries = readdirSync(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-        if (entry.isDirectory() && entry.name !== 'node_modules') {
-            const subDir = join(dir, entry.name);
-            result.push(subDir);
-            findDirsRecursiveSync(subDir, result);
-        }
-    }
+    debugLog(`[mono] 共发现 ${workspacePackages.size} 个包`);
 }
 
 /**
@@ -219,12 +172,11 @@ export async function resolve(specifier, context, nextResolve) {
         return nextResolve(specifier, context);
     }
 
-    // 检查是否是 workspace 中的包
+    // 检查是否是本地包
     const pkg = workspacePackages?.get(specifier);
 
-    if (!pkg || !pkg.monorepoEntry) {
-        // 不是 workspace 包，或没有 monorepo 配置，使用默认解析
-        debugLog(`[mono] 跳过: ${specifier} (pkg=${!!pkg}, monorepoEntry=${pkg?.monorepoEntry})`);
+    if (!pkg) {
+        // 不是本地包，使用默认解析
         return nextResolve(specifier, context);
     }
 
@@ -240,4 +192,3 @@ export async function resolve(specifier, context, nextResolve) {
         shortCircuit: true
     };
 }
-
