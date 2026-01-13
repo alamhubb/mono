@@ -4,8 +4,9 @@
  * mono CLI 入口
  * 
  * 命令:
- * - mono <file>    运行 TypeScript 文件，注入自定义 loader
- * - mono i         递归安装所有嵌套 monorepo 的依赖
+ * - mono <file>        运行 TypeScript 文件，注入自定义 loader
+ * - mono --debug <file> 开启调试模式运行
+ * - mono i             递归安装所有嵌套 monorepo 的依赖
  * 
  * loader.mjs 会自动：
  * 1. 注册 tsx ESM loader（TypeScript 支持）
@@ -174,7 +175,7 @@ async function installCommand() {
 /**
  * 运行 TypeScript 文件
  */
-function runCommand(args) {
+function runCommand(args, debug = false) {
     const loaderUrl = getLoaderUrl();
 
     const nodeArgs = [
@@ -182,9 +183,15 @@ function runCommand(args) {
         ...args
     ];
 
+    // 如果开启 debug，设置环境变量
+    const env = { ...process.env };
+    if (debug) {
+        env.MONO_DEBUG = '1';
+    }
+
     const child = spawn('node', nodeArgs, {
         stdio: 'inherit',
-        env: process.env
+        env
     });
 
     child.on('close', (code) => {
@@ -203,14 +210,26 @@ function runCommand(args) {
 async function main() {
     const args = process.argv.slice(2);
 
+    // 检查调试参数（支持多种格式，可在任意位置）
+    let debug = false;
+    const filteredArgs = [];
+
+    for (const arg of args) {
+        if (arg === '--debug' || arg === '-debug' || arg === '-d' || arg === 'debug' || arg === 'd') {
+            debug = true;
+        } else {
+            filteredArgs.push(arg);
+        }
+    }
+
     // 检查是否是 install 命令
-    if (args[0] === 'i' || args[0] === 'install') {
+    if (filteredArgs[0] === 'i' || filteredArgs[0] === 'install') {
         await installCommand();
         return;
     }
 
     // 否则运行 TypeScript 文件
-    runCommand(args);
+    runCommand(filteredArgs, debug);
 }
 
 main();
