@@ -1,0 +1,40 @@
+{
+    "name": "mono",
+    "version": "0.1.0",
+    "description": "CLI tool for monorepo - auto-discover local packages and use source code in Node.js",
+    "type": "module",
+    "bin": {
+        "mono": "./bin/mono.mjs"
+    },
+    "main": "./src/hooks.mjs",
+    "exports": {
+        ".": "./src/hooks.mjs",
+        "./hooks": "./src/hooks.mjs",
+        "./loader": "./src/loader.mjs"
+    },
+    "files": [
+        "bin",
+        "src"
+    ],
+    "scripts": {
+        "test": "node test/test.mjs"
+    },
+    "keywords": [
+        "monorepo",
+        "cli",
+        "node",
+        "loader",
+        "workspace",
+        "esm",
+        "typescript"
+    ],
+    "author": "alamhubb",
+    "license": "MIT",
+    "engines": {
+        "node": ">=18.19.0"
+    },
+    "dependencies": {
+        "cross-spawn": "^7.0.6",
+        "tsx": "^4.21.0"
+    }
+}
