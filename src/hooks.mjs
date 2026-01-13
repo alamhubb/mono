@@ -11,7 +11,7 @@
  * 注意：此文件使用纯 JavaScript，以便 Node.js 原生加载
  */
 
-import { readFileSync, existsSync, readdirSync, appendFileSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, appendFileSync, writeFileSync } from 'node:fs';
 import { resolve as pathResolve, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -144,6 +144,48 @@ function initWorkspace() {
     findAllPackages(projectRoot, workspacePackages);
 
     debugLog(`[mono] 共发现 ${workspacePackages.size} 个包`);
+
+    // 生成配置文件
+    writeMonoConfig(cwd, 'compiler');
+}
+
+/**
+ * 生成 monoConfig.json 配置文件
+ * 记录包名与文件地址的映射关系
+ * 
+ * @param {string} cwd 当前工作目录
+ * @param {string} env 环境类型：'compiler' (node) 或 'runtime' (vite)
+ */
+function writeMonoConfig(cwd, env) {
+    const configPath = join(cwd, 'monoConfig.json');
+
+    // 读取现有配置或创建新配置
+    let config = { compiler: {}, runtime: {} };
+    if (existsSync(configPath)) {
+        try {
+            config = JSON.parse(readFileSync(configPath, 'utf-8'));
+        } catch {
+            // 解析失败，使用默认配置
+        }
+    }
+
+    // 构建包映射
+    const packageMap = {};
+    for (const [name, pkg] of workspacePackages) {
+        const entryPath = join(pkg.dir, pkg.monorepoEntry);
+        packageMap[name] = entryPath;
+    }
+
+    // 更新对应环境的配置
+    config[env] = packageMap;
+
+    // 写入配置文件
+    try {
+        writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+        debugLog(`[mono] 已生成配置文件: ${configPath}`);
+    } catch (err) {
+        debugLog(`[mono] 写入配置文件失败: ${err.message}`);
+    }
 }
 
 /**

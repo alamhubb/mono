@@ -8,7 +8,7 @@
  */
 
 import type { Plugin, ResolvedConfig } from 'vite'
-import { existsSync, readFileSync, readdirSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs'
 import { join, dirname, resolve } from 'path'
 
 // 根目录标识符列表
@@ -129,6 +129,53 @@ function isMainEntryImport(specifier: string): boolean {
 }
 
 /**
+ * 生成 monoConfig.json 配置文件
+ * 记录包名与文件地址的映射关系
+ * 
+ * @param cwd 当前工作目录
+ * @param packages 包映射
+ * @param log 日志函数
+ */
+function writeMonoConfig(
+    cwd: string,
+    packages: Map<string, PackageInfo>,
+    log: (msg: string) => void
+): void {
+    const configPath = join(cwd, 'monoConfig.json')
+
+    // 读取现有配置或创建新配置
+    let config: { compiler: Record<string, string>; runtime: Record<string, string> } = {
+        compiler: {},
+        runtime: {}
+    }
+    if (existsSync(configPath)) {
+        try {
+            config = JSON.parse(readFileSync(configPath, 'utf-8'))
+        } catch {
+            // 解析失败，使用默认配置
+        }
+    }
+
+    // 构建包映射
+    const packageMap: Record<string, string> = {}
+    for (const [name, pkg] of packages) {
+        const entryPath = join(pkg.dir, pkg.entry)
+        packageMap[name] = entryPath
+    }
+
+    // 更新 runtime 环境的配置
+    config.runtime = packageMap
+
+    // 写入配置文件
+    try {
+        writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8')
+        log(`[vite-mono] 已生成配置文件: ${configPath}`)
+    } catch (err) {
+        log(`[vite-mono] 写入配置文件失败: ${(err as Error).message}`)
+    }
+}
+
+/**
  * vite-plugin-mono
  * 
  * 自动发现本地包并使用源码入口
@@ -175,6 +222,9 @@ export function viteMono(options: ViteMonoOptions = {}): Plugin {
             }
 
             log(`[vite-mono] 共发现 ${packages.size} 个本地包`)
+
+            // 生成配置文件（runtime 环境）
+            writeMonoConfig(cwd, packages, log)
         },
 
         resolveId(source) {
