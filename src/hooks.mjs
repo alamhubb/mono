@@ -24,7 +24,11 @@ const DEFAULT_ENTRY = './src/index.ts';
 // 调试日志文件
 const DEBUG_LOG = join(process.cwd(), 'mono-debug.log');
 
+// 是否启用调试日志（设置环境变量 MONO_DEBUG=1 开启，或临时设为 true）
+const DEBUG_ENABLED = process.env.MONO_DEBUG === '1' || true;
+
 function debugLog(msg) {
+    if (!DEBUG_ENABLED) return;
     // 同时输出到控制台和文件
     console.log(msg);
     try {
@@ -32,7 +36,9 @@ function debugLog(msg) {
     } catch { }
 }
 
-debugLog('[mono hooks] hooks.mjs 已加载');
+if (DEBUG_ENABLED) {
+    debugLog('[mono hooks] hooks.mjs 已加载');
+}
 
 // 缓存：workspace 包信息
 let workspacePackages = null;

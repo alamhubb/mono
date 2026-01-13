@@ -22,16 +22,19 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-console.log('[mono] 加载 monorepo-loader.mjs');
+// 是否启用调试日志（设置环境变量 MONO_DEBUG=1 开启）
+const DEBUG_ENABLED = process.env.MONO_DEBUG === '1';
+
+if (DEBUG_ENABLED) console.log('[mono] 加载 monorepo-loader.mjs');
 
 // 1. 先注册 tsx 的 ESM loader（TypeScript 编译）
-console.log('[mono] 注册 tsx ESM loader...');
+if (DEBUG_ENABLED) console.log('[mono] 注册 tsx ESM loader...');
 await import('tsx/esm');
 
 // 2. 再注册 mono 的 resolve hooks（包名拦截）
 // 后注册先调用，所以 mono 会先于 tsx 处理 resolve
 const hooksPath = join(__dirname, 'hooks.mjs');
-console.log('[mono] 注册 mono hooks:', hooksPath);
+if (DEBUG_ENABLED) console.log('[mono] 注册 mono hooks:', hooksPath);
 register(pathToFileURL(hooksPath).href, import.meta.url);
 
 

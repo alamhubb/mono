@@ -134,7 +134,7 @@ function isMainEntryImport(specifier: string): boolean {
  * 自动发现本地包并使用源码入口
  */
 export function viteMono(options: ViteMonoOptions = {}): Plugin {
-    const { debug = true, packages: extraPackages = {} } = options
+    const { debug = false, packages: extraPackages = {} } = options
     const packages = new Map<string, PackageInfo>()
     let config: ResolvedConfig
 
