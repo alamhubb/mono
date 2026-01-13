@@ -1,0 +1,94 @@
+2026-01-12T08:54:22.208Z [mono hooks] hooks.mjs 已加载
+2026-01-12T08:54:22.211Z [mono] 项目根目录: D:\project\parserall
+2026-01-12T08:54:22.211Z [mono] 发现包: parserall -> ./src/index.ts
+2026-01-12T08:54:22.212Z [mono] 发现包: csstsjs -> ./src/index.ts
+2026-01-12T08:54:22.212Z [mono] 发现包: create-cssts -> ./src/index.ts
+2026-01-12T08:54:22.213Z [mono] 发现包: {{projectName}} -> ./src/index.ts
+2026-01-12T08:54:22.214Z [mono] 发现包: cssts-compiler -> ./src/index.ts
+2026-01-12T08:54:22.217Z [mono] 发现包: cssts-ts -> ./src/index.ts
+2026-01-12T08:54:22.217Z [mono] 发现包: cssts-language -> ./src/index.ts
+2026-01-12T08:54:22.218Z [mono] 发现包: cssts-theme-element -> ./src/index.ts
+2026-01-12T08:54:22.219Z [mono] 发现包: cssts-ui-test -> ./src/index.ts
+2026-01-12T08:54:22.219Z [mono] 发现包: @cssts-ui/components -> ./src/index.ts
+2026-01-12T08:54:22.219Z [mono] 跳过 node_modules: D:\project\parserall\cssts\cssts-ui-test\cssts-components\node_modules
+2026-01-12T08:54:22.220Z [mono] 跳过 node_modules: D:\project\parserall\cssts\cssts-ui-test\node_modules
+2026-01-12T08:54:22.220Z [mono] 跳过 node_modules: D:\project\parserall\cssts\node_modules
+2026-01-12T08:54:22.221Z [mono] 发现包: huosubang -> ./src/index.ts
+2026-01-12T08:54:22.221Z [mono] 发现包: ovs-component-test -> ./src/index.ts
+2026-01-12T08:54:22.222Z [mono] 发现包: vite-plugin-cssts -> ./src/index.ts
+2026-01-12T08:54:22.222Z [mono] 发现包: vite-project -> ./src/index.ts
+2026-01-12T08:54:22.223Z [mono] 发现包: miniprogram-h5 -> ./src/index.ts
+2026-01-12T08:54:22.223Z [mono] 发现包: uni-preset-vue -> ./src/index.ts
+2026-01-12T08:54:22.224Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\easy-uni-test\node_modules
+2026-01-12T08:54:22.224Z [mono] 发现包: miniprogram-runtime -> ./src/index.ts
+2026-01-12T08:54:22.226Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\miniprogram-runtime\node_modules
+2026-01-12T08:54:22.226Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\node_modules
+2026-01-12T08:54:22.226Z [mono] 发现包: only-my -> ./src/index.ts
+2026-01-12T08:54:22.227Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\only-my\node_modules
+2026-01-12T08:54:22.227Z [mono] 发现包: test-vite-mp -> ./src/index.ts
+2026-01-12T08:54:22.227Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\test-vite-mp\node_modules
+2026-01-12T08:54:22.228Z [mono] 发现包: uni-preset-vue -> ./src/index.ts
+2026-01-12T08:54:22.228Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\uniapp-mp\node_modules
+2026-01-12T08:54:22.230Z [mono] 发现包: uni-preset-vue -> ./src/index.ts
+2026-01-12T08:54:22.232Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\univue-test\node_modules
+2026-01-12T08:54:22.232Z [mono] 发现包: vite-plugin-mp -> ./src/index.ts
+2026-01-12T08:54:22.233Z [mono] 发现包: wxml-compiler -> ./src/index.ts
+2026-01-12T08:54:22.233Z [mono] 发现包: uni-preset-vue -> ./src/index.ts
+2026-01-12T08:54:22.233Z [mono] 跳过 node_modules: D:\project\parserall\miniprogram-web\wxml-uni-test\node_modules
+2026-01-12T08:54:22.234Z [mono] 发现包: monorepo-cli -> ./src/index.ts
+2026-01-12T08:54:22.234Z [mono] 跳过 node_modules: D:\project\parserall\monorepo\node_modules
+2026-01-12T08:54:22.234Z [mono] 发现包: playground -> ./src/index.ts
+2026-01-12T08:54:22.234Z [mono] 发现包: @playground/app -> ./src/index.ts
+2026-01-12T08:54:22.234Z [mono] 发现包: @playground/utils -> ./src/index.js
+2026-01-12T08:54:22.235Z [mono] 发现包: test-workspace -> ./src/index.ts
+2026-01-12T08:54:22.235Z [mono] 跳过 node_modules: D:\project\parserall\monorepo\test\fixture\node_modules
+2026-01-12T08:54:22.235Z [mono] 发现包: @test/app -> ./src/index.ts
+2026-01-12T08:54:22.235Z [mono] 发现包: @test/utils -> ./src/index.js
+2026-01-12T08:54:22.236Z [mono] 跳过 node_modules: D:\project\parserall\node_modules
+2026-01-12T08:54:22.236Z [mono] 发现包: create-ovs -> ./src/index.ts
+2026-01-12T08:54:22.236Z [mono] 发现包: {{projectName}} -> ./src/index.ts
+2026-01-12T08:54:22.237Z [mono] 发现包: guidebot-web -> ./src/index.ts
+2026-01-12T08:54:22.237Z [mono] 发现包: java-parser -> ./src/index.ts
+2026-01-12T08:54:22.238Z [mono] 跳过 node_modules: D:\project\parserall\ovsjs\node_modules
+2026-01-12T08:54:22.238Z [mono] 发现包: os-compiler -> ./src/index.ts
+2026-01-12T08:54:22.238Z [mono] 发现包: osjs -> ./src/index.ts
+2026-01-12T08:54:22.239Z [mono] 发现包: os-language -> ./src/index.ts
+2026-01-12T08:54:22.239Z [mono] 发现包: os-language-server -> ./src/index.ts
+2026-01-12T08:54:22.240Z [mono] 发现包: os-vscode-client -> ./src/index.ts
+2026-01-12T08:54:22.240Z [mono] 发现包: ovs-compiler -> ./src/index.ts
+2026-01-12T08:54:22.241Z [mono] 跳过 node_modules: D:\project\parserall\ovsjs\ovs\ovs-compiler\node_modules
+2026-01-12T08:54:22.241Z [mono] 发现包: ovsjs -> ./src/index.ts
+2026-01-12T08:54:22.242Z [mono] 跳过 node_modules: D:\project\parserall\ovsjs\ovs\ovs-runtime\node_modules
+2026-01-12T08:54:22.242Z [mono] 发现包: ovs-language -> ./src/index.ts
+2026-01-12T08:54:22.243Z [mono] 发现包: ovs-language-server -> ./src/index.ts
+2026-01-12T08:54:22.244Z [mono] 发现包: ovs-vscode-client -> ./src/index.ts
+2026-01-12T08:54:22.245Z [mono] 发现包: vite-plugin-ovs -> ./src/index.ts
+2026-01-12T08:54:22.245Z [mono] 跳过 node_modules: D:\project\parserall\ovsjs\vite-plugin-ovs\node_modules
+2026-01-12T08:54:22.245Z [mono] 发现包: slimejs -> ./src/index.ts
+2026-01-12T08:54:22.245Z [mono] 跳过 node_modules: D:\project\parserall\slime\node_modules
+2026-01-12T08:54:22.245Z [mono] 发现包: slime-ast -> ./src/index.ts
+2026-01-12T08:54:22.246Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-ast\node_modules
+2026-01-12T08:54:22.246Z [mono] 发现包: slime-generator -> ./src/index.ts
+2026-01-12T08:54:22.246Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-generator\node_modules
+2026-01-12T08:54:22.253Z [mono] 发现包: slime-parser -> ./src/index.ts
+2026-01-12T08:54:22.253Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-parser\node_modules
+2026-01-12T08:54:22.254Z [mono] 发现包: slime-test -> ./src/index.ts
+2026-01-12T08:54:22.254Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-test\node_modules
+2026-01-12T08:54:22.255Z [mono] 发现包: slime-token -> ./src/index.ts
+2026-01-12T08:54:22.255Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-token\node_modules
+2026-01-12T08:54:22.255Z [mono] 发现包: slime-xml -> ./src/index.ts
+2026-01-12T08:54:22.256Z [mono] 跳过 node_modules: D:\project\parserall\slime\slime-xml\node_modules
+2026-01-12T08:54:22.256Z [mono] 发现包: uni-preset-vue -> ./src/index.ts
+2026-01-12T08:54:22.257Z [mono] 跳过 node_modules: D:\project\parserall\test-h5-uni\node_modules
+2026-01-12T08:54:22.257Z [mono] 发现包: @js-css/packages_root -> ./src/index.ts
+2026-01-12T08:54:22.257Z [mono] 发现包: @js-css/uni-app-react -> ./src/index.ts
+2026-01-12T08:54:22.258Z [mono] 发现包: @js-css/uni-app-react-demo -> ./src/index.ts
+2026-01-12T08:54:22.260Z [mono] 发现包: create-uni-render -> ./src/index.ts
+2026-01-12T08:54:22.260Z [mono] 发现包: uni-render-template -> ./src/index.ts
+2026-01-12T08:54:22.261Z [mono] 发现包: uni-render-demo -> ./src/index.ts
+2026-01-12T08:54:22.263Z [mono] 跳过 node_modules: D:\project\parserall\uni-render\my-vue3-project\node_modules
+2026-01-12T08:54:22.263Z [mono] 发现包: uni-render -> ./src/index.ts
+2026-01-12T08:54:22.263Z [mono] 跳过 node_modules: D:\project\parserall\uni-render\uni-render\node_modules
+2026-01-12T08:54:22.264Z [mono] 发现包: vite-plugin-uni-render -> ./src/index.ts
+2026-01-12T08:54:22.264Z [mono] 跳过 node_modules: D:\project\parserall\uni-render\vite-plugin-uni-render\node_modules
+2026-01-12T08:54:22.264Z [mono] 共发现 57 个包
