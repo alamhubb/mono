@@ -41,9 +41,10 @@ Project A (pnpm) → must use pnpm
 
 With Mono, you just:
 - ✅ Run `mono ./src/index.ts` - that's it!
-- ✅ No project restructuring, no `workspace:*`
-- ✅ No package builds, use source directly
-- ✅ Changes take effect immediately, works with npm/yarn/pnpm
+- ✅ **No `npm install`** - clone and run immediately
+- ✅ **No build step** - use TypeScript source directly
+- ✅ **No configuration** - auto-discovers all local packages
+- ✅ Works with npm/yarn/pnpm - your project stays standard
 
 ### pnpm workspace vs Mono
 
@@ -55,6 +56,18 @@ With Mono, you just:
 | After Cloning | Must use pnpm install | npm/yarn/pnpm all work |
 | Dependencies | Need to build first | Use source directly |
 | Team Collaboration | Everyone must use pnpm | No requirements |
+
+### All Solutions Comparison
+
+| Solution | No Install | No Build | Zero Config | Auto Discovery | Complexity |
+|----------|:----------:|:--------:|:-----------:|:--------------:|:----------:|
+| npm native | ❌ | ❌ | ❌ | ❌ | High |
+| pnpm workspace | ✅ | ⚠️ | ❌ | ✅ | Medium |
+| tsconfig paths | ✅ | ✅ | ❌ | ❌ | Low |
+| Nx | ✅ | ✅ | ❌ | ✅ | Very High |
+| **mono** | ✅ | ✅ | ✅ | ✅ | **Minimal** |
+
+> ⚠️ = Depends on configuration
 
 ---
 
@@ -88,8 +101,10 @@ npm install -g mono-mjs
 
 ### 2. Run your project
 
+> 💡 **No `npm install` needed for local packages!** Just clone and run.
+
 ```bash
-# Run TypeScript directly
+# Run TypeScript directly - local packages resolved automatically
 mono ./src/index.ts
 
 # Run Vite with local packages
@@ -120,9 +135,37 @@ export default defineConfig({
 
 ## ✨ Features
 
-- 🎯 **Zero Intrusion** - No project restructuring, no configuration files
+### 🚫 Three "No"s - What You DON'T Need
+
+| Traditional Workflow | With Mono |
+|---------------------|----------|
+| `npm install` after adding packages | ❌ Not needed |
+| `npm run build` after code changes | ❌ Not needed |
+| Configure `workspace.yaml` or `tsconfig paths` | ❌ Not needed |
+
+> 💡 **Note**: Third-party packages from npm registry still require `npm install`. The "No Install" benefit applies to **local packages** only.
+
+### 🔄 vs npm `file:` Protocol
+
+```json
+// Traditional npm local dependency
+{ "my-lib": "file:../packages/my-lib" }
+```
+
+| After modifying local package | npm `file:` | mono |
+|------------------------------|:-----------:|:----:|
+| Need to run `npm install` again? | ✅ Yes | ❌ No |
+| Changes visible immediately? | ❌ No | ✅ Yes |
+
+**With `file:` protocol**, npm copies the package to `node_modules`. Every time you modify the local package, you must run `npm install` again to update the copy.
+
+**With mono**, imports are redirected to source code at runtime. No copying, no reinstalling.
+
+### ✅ What Mono Gives You
+
+- 🎯 **Zero Intrusion** - Your project stays a standard npm project
 - 🔍 **Auto Discovery** - Recursively finds all local packages
-- ⚡️ **Instant Reload** - Changes take effect immediately
+- ⚡️ **Source First** - Run TypeScript source directly, no build artifacts
 - 📦 **Package Manager Agnostic** - Works with npm, yarn, pnpm, bun
 - 🛠️ **Zero Config** - Default `./src/index.ts`, optional `local` field
 
