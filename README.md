@@ -6,6 +6,9 @@
 
 **Use TypeScript source code directly in development, no build required**
 
+[![npm version](https://img.shields.io/npm/v/mono-mjs.svg?style=flat-square)](https://www.npmjs.com/package/mono-mjs)
+[![npm downloads](https://img.shields.io/npm/dm/mono-mjs.svg?style=flat-square)](https://www.npmjs.com/package/mono-mjs)
+[![GitHub stars](https://img.shields.io/github/stars/alamhubb/mono.svg?style=flat-square)](https://github.com/alamhubb/mono)
 [![license](https://img.shields.io/npm/l/mono-mjs.svg?style=flat-square)](./LICENSE)
 [![node version](https://img.shields.io/node/v/mono-mjs.svg?style=flat-square)](https://nodejs.org)
 
