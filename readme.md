@@ -1,25 +1,81 @@
-# Monorepo Tools
+<div align="center">
 
-> 用于 monorepo 项目的开发工具集合
+# Mono
 
-这是一个工具集合目录，包含两个独立的包：
+**🚀 Zero-intrusion Monorepo Development Tools**
 
-## 📦 包列表
+**Use TypeScript source code directly in development, no build required**
 
-### 1. [mono](./mono)
+[![license](https://img.shields.io/npm/l/mono-mjs.svg?style=flat-square)](./LICENSE)
+[![node version](https://img.shields.io/node/v/mono-mjs.svg?style=flat-square)](https://nodejs.org)
 
-Node.js CLI 工具，用于在开发时自动使用本地包的源代码。
+[English](./README.md) · [简体中文](./README.zh-CN.md)
+
+</div>
+
+---
+
+## 💡 What is Mono?
+
+Mono is a set of tools for **zero-intrusion monorepo development**. It allows you to use TypeScript source code directly during development, without building packages or restructuring your project.
+
+### The Problem
+
+In monorepo development, you typically need to:
+- ❌ Convert to pnpm/yarn workspace
+- ❌ Build packages before using them
+- ❌ Rebuild after every change
+- ❌ Deal with `workspace:*` protocol
+
+### The Solution
+
+With Mono, you just:
+- ✅ Run `mono ./src/index.ts` - that's it!
+- ✅ No project restructuring
+- ✅ No package builds needed
+- ✅ Changes take effect immediately
+
+---
+
+## 📦 Packages
+
+This repository contains two packages that work together:
+
+| Package | Purpose | Install |
+|---------|---------|---------|
+| [**mono-mjs**](./mono) | Node.js CLI - for build tools, Vite plugins | `npm install -g mono-mjs` |
+| [**vite-plugin-mono**](./vite-plugin-mono) | Vite Plugin - for browser runtime | `npm install -D vite-plugin-mono` |
+
+### When to use which?
+
+| Scenario | Tool |
+|----------|------|
+| Running scripts, build tools | `mono` |
+| Vite plugins, compilers | `mono` |
+| Browser-side imports | `vite-plugin-mono` |
+| Vue/React components | `vite-plugin-mono` |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install CLI globally
 
 ```bash
-npm install -g mono
-
-# 运行 TypeScript 文件
-mono ./src/index.ts
+npm install -g mono-mjs
 ```
 
-### 2. [vite-plugin-mono](./vite-plugin-mono)
+### 2. Run your project
 
-Vite 插件，用于在浏览器端自动使用本地包的源代码。
+```bash
+# Run TypeScript directly
+mono ./src/index.ts
+
+# Run Vite with local packages
+mono ./node_modules/vite/bin/vite.js
+```
+
+### 3. (Optional) Add Vite plugin for browser-side
 
 ```bash
 npm install -D vite-plugin-mono
@@ -28,40 +84,105 @@ npm install -D vite-plugin-mono
 ```typescript
 // vite.config.ts
 import { defineConfig } from 'vite'
-import viteMono from 'vite-plugin-mono'
+import vue from '@vitejs/plugin-vue'
+import { viteMono } from 'vite-plugin-mono'
 
 export default defineConfig({
-  plugins: [viteMono()]
+  plugins: [
+    viteMono(),  // First!
+    vue()
+  ]
 })
 ```
 
-## 核心特性
+---
 
-- 🔍 **自动发现** - 递归扫描项目，自动发现所有本地包
-- 🎯 **源码开发** - 直接使用 TypeScript 源码，无需构建
-- ⚡️ **快速热更新** - 修改立即生效
-- 📝 **配置文件** - 自动生成 `.mono/monoConfig.json` 记录包映射
+## ✨ Features
 
-## 工作原理
+- 🎯 **Zero Intrusion** - No project restructuring, no configuration files
+- 🔍 **Auto Discovery** - Recursively finds all local packages
+- ⚡️ **Instant Reload** - Changes take effect immediately
+- 📦 **Package Manager Agnostic** - Works with npm, yarn, pnpm, bun
+- 🛠️ **Zero Config** - Default `./src/index.ts`, optional `local` field
 
-两个工具采用相同的包发现逻辑：
+---
 
-1. 向上查找项目根目录（包含 `.idea`/`.vscode`/`.git`）
-2. 从根目录递归向下查找所有 `package.json`
-3. 根据 `package.json` 的 `name` 字段注册包
-4. 使用 `monorepo` 字段指定的入口，默认为 `./src/index.ts`
+## 📚 How It Works
 
-## 配置
+### Package Discovery
 
-在包的 `package.json` 中添加 `monorepo` 字段指定源码入口：
+```
+Find farthest project root upward (.idea/.vscode/.git/package.json)
+  └── Recursive Scan
+      └── Find all package.json
+          └── Register by "name" field
+```
+
+### Import Interception
+
+```javascript
+// Your code
+import { utils } from 'my-utils'
+
+// Mono redirects to source code
+// → /path/to/my-utils/src/index.ts
+```
+
+---
+
+## ⚙️ Configuration
+
+### Zero Config (Default)
+
+All packages use `./src/index.ts` by default. No configuration needed!
+
+### Custom Entry (Optional)
+
+Add `local` field to `package.json`:
 
 ```json
 {
   "name": "my-package",
-  "monorepo": "./src/index.ts"
+  "local": "./src/main.ts"
 }
 ```
 
-## License
+---
 
-MIT
+## 📋 Requirements
+
+- **Node.js** >= 18.19.0
+- **ESM Projects** - `"type": "module"` in package.json
+
+---
+
+## 🛠️ Development
+
+```bash
+# Clone repository
+git clone https://github.com/alamhubb/mono.git
+cd mono
+
+# Install dependencies
+npm install
+
+# Build vite-plugin-mono
+cd vite-plugin-mono
+npm run build
+```
+
+---
+
+## 📄 License
+
+MIT © [alamhubb](https://github.com/alamhubb)
+
+---
+
+<div align="center">
+
+Made with ❤️ by [alamhubb](https://github.com/alamhubb)
+
+[Report Bug](https://github.com/alamhubb/mono/issues) · [Request Feature](https://github.com/alamhubb/mono/issues)
+
+</div>
