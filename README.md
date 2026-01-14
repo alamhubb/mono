@@ -19,21 +19,42 @@
 
 Mono is a set of tools for **zero-intrusion monorepo development**. It allows you to use TypeScript source code directly during development, without building packages or restructuring your project.
 
-### The Problem
+### The "Chain Pollution" Problem with pnpm workspace
 
-In monorepo development, you typically need to:
-- ❌ Convert to pnpm/yarn workspace
-- ❌ Build packages before using them
-- ❌ Rebuild after every change
-- ❌ Deal with `workspace:*` protocol
+Using pnpm workspace means **your entire dependency chain is forced to use pnpm**:
 
-### The Solution
+```
+Project A (pnpm) → must use pnpm
+  └── Project B → must use pnpm (infected)
+        └── Project C → must use pnpm (infected)
+              └── Project D → must use pnpm (infected)
+```
+
+- 🔗 All related projects must convert to pnpm
+- 👥 Everyone on the team must install pnpm
+- 🔧 All CI/CD environments must configure pnpm
+- 📦 Newcomers running `npm install` get error: `workspace:*`
+
+> Read more: ["Chain Pollution" — How One pnpm Project Forces Your Entire Dependency Chain to Use pnpm](./WHY-MONO.md)
+
+### Mono's Solution
 
 With Mono, you just:
 - ✅ Run `mono ./src/index.ts` - that's it!
-- ✅ No project restructuring
-- ✅ No package builds needed
-- ✅ Changes take effect immediately
+- ✅ No project restructuring, no `workspace:*`
+- ✅ No package builds, use source directly
+- ✅ Changes take effect immediately, works with npm/yarn/pnpm
+
+### pnpm workspace vs Mono
+
+| Aspect | pnpm workspace | Mono |
+|--------|----------------|------|
+| Installation | Must install pnpm | Optional |
+| Config Files | Needs pnpm-workspace.yaml | None needed |
+| package.json | Must change to workspace:* | No changes |
+| After Cloning | Must use pnpm install | npm/yarn/pnpm all work |
+| Dependencies | Need to build first | Use source directly |
+| Team Collaboration | Everyone must use pnpm | No requirements |
 
 ---
 

@@ -19,21 +19,42 @@
 
 Mono 是一套**零侵入式 monorepo 开发工具**。它允许你在开发期间直接使用 TypeScript 源码，无需构建包或重构项目。
 
-### 问题
+### pnpm workspace 的「链式污染」问题
 
-在 monorepo 开发中，你通常需要：
-- ❌ 转换为 pnpm/yarn workspace
-- ❌ 使用前先构建包
-- ❌ 每次修改后重新构建
-- ❌ 处理 `workspace:*` 协议
+使用 pnpm workspace 意味着**整条依赖链都被迫使用 pnpm**：
 
-### 解决方案
+```
+项目 A (pnpm) → 必须用 pnpm
+  └── 项目 B → 必须用 pnpm（被污染）
+        └── 项目 C → 必须用 pnpm（被污染）
+              └── 项目 D → 必须用 pnpm（被污染）
+```
+
+- 🔗 所有相关项目都必须改成 pnpm
+- 👥 所有开发人员都必须安装 pnpm  
+- 🔧 所有 CI/CD 环境都必须配置 pnpm
+- 📦 新成员 `npm install` 直接报错：`workspace:*`
+
+> 详细分析请阅读：[「链式污染」—— 为什么一个 pnpm 项目会逼着整条依赖链都改成 pnpm](./WHY-MONO.zh-CN.md)
+
+### Mono 的解决方案
 
 使用 Mono，你只需：
 - ✅ 运行 `mono ./src/index.ts` - 就这么简单！
-- ✅ 无需重构项目
-- ✅ 无需构建包
-- ✅ 修改立即生效
+- ✅ 无需重构项目，无需 `workspace:*`
+- ✅ 无需构建包，直接使用源码
+- ✅ 修改立即生效，npm/yarn/pnpm 都兼容
+
+### pnpm workspace vs Mono
+
+| 方面 | pnpm workspace | Mono |
+|------|----------------|------|
+| 安装 | 必须安装 pnpm | 可选 |
+| 配置文件 | 需要 pnpm-workspace.yaml | 不需要 |
+| package.json | 需要修改为 workspace:* | 不需要修改 |
+| 克隆后使用 | 必须 pnpm install | npm/yarn/pnpm 都可以 |
+| 依赖包 | 需要先构建 | 直接使用源码 |
+| 团队协作 | 所有人必须用 pnpm | 不强制 |
 
 ---
 
