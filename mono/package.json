@@ -1,7 +1,7 @@
 {
     "name": "mono-mjs",
     "version": "0.1.0",
-    "description": "CLI tool for monorepo - auto-discover local packages and use source code in Node.js",
+    "description": "Zero-intrusion monorepo tool - use TypeScript source directly without pnpm, rebuild, or workspace:* protocol",
     "type": "module",
     "bin": {
         "mono": "./bin/mono.mjs"
@@ -21,12 +21,20 @@
     },
     "keywords": [
         "monorepo",
-        "cli",
-        "node",
-        "loader",
-        "workspace",
+        "typescript",
+        "no-pnpm",
+        "npm-only",
+        "no-build",
+        "zero-config",
+        "source-resolution",
+        "runtime-loader",
+        "local-packages",
+        "workspace-alternative",
         "esm",
-        "typescript"
+        "tsx",
+        "developer-tools",
+        "lightweight",
+        "no-symlink"
     ],
     "author": "alamhubb",
     "license": "MIT",

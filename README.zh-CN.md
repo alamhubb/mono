@@ -35,8 +35,6 @@ Mono 是一套**零侵入式 monorepo 开发工具**。它允许你在开发期�
 - 🔧 所有 CI/CD 环境都必须配置 pnpm
 - 📦 新成员 `npm install` 直接报错：`workspace:*`
 
-> 详细分析请阅读：[「链式污染」—— 为什么一个 pnpm 项目会逼着整条依赖链都改成 pnpm](./WHY-MONO.zh-CN.md)
-
 ### Mono 的解决方案
 
 使用 Mono，你只需：

@@ -35,8 +35,6 @@ Project A (pnpm) → must use pnpm
 - 🔧 All CI/CD environments must configure pnpm
 - 📦 Newcomers running `npm install` get error: `workspace:*`
 
-> Read more: ["Chain Pollution" — How One pnpm Project Forces Your Entire Dependency Chain to Use pnpm](./WHY-MONO.md)
-
 ### Mono's Solution
 
 With Mono, you just:
