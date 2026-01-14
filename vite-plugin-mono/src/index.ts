@@ -75,8 +75,8 @@ function findAllPackages(rootDir: string, packages: Map<string, PackageInfo>): v
             const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
 
             if (pkg.name) {
-                // 确定入口：优先使用 monorepo 配置，否则使用默认值
-                const entry = typeof pkg.monorepo === 'string' ? pkg.monorepo : DEFAULT_ENTRY
+                // 确定入口：优先使用 local 配置，否则使用默认值
+                const entry = typeof pkg.local === 'string' ? pkg.local : DEFAULT_ENTRY
 
                 packages.set(pkg.name, {
                     name: pkg.name,
