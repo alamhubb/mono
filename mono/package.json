@@ -30,6 +30,14 @@
     ],
     "author": "alamhubb",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/alamhubb/mono.git"
+    },
+    "homepage": "https://github.com/alamhubb/mono#readme",
+    "bugs": {
+        "url": "https://github.com/alamhubb/mono/issues"
+    },
     "engines": {
         "node": ">=18.19.0"
     },

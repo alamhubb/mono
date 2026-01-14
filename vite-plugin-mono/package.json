@@ -2,21 +2,51 @@
     "name": "vite-plugin-mono",
     "version": "0.1.0",
     "type": "module",
-    "main": "./src/index.ts",
-    "monorepo": "./src/index.ts",
-    "license": "MIT",
-    "description": "Vite plugin for monorepo - auto-discover local packages and use source code",
+    "description": "Vite plugin for monorepo - auto-discover local packages and use source code in browser",
+    "main": "./dist/index.mjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "local": "./src/index.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.mts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.mjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsdown"
+    },
     "keywords": [
         "vite",
         "vite-plugin",
         "monorepo",
-        "workspace"
+        "workspace",
+        "esm",
+        "typescript",
+        "source-code"
     ],
     "author": "alamhubb",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/alamhubb/mono.git",
+        "directory": "vite-plugin-mono"
+    },
+    "homepage": "https://github.com/alamhubb/mono/tree/main/vite-plugin-mono#readme",
+    "bugs": {
+        "url": "https://github.com/alamhubb/mono/issues"
+    },
     "peerDependencies": {
         "vite": ">=5.0.0"
     },
     "devDependencies": {
+        "tsdown": "^0.19.0",
+        "typescript": "^5.8.3",
         "vite": "^6.3.5"
     }
 }

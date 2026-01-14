@@ -1,0 +1,123 @@
+<div align="center">
+
+# vite-plugin-mono
+
+**🚀 Vite plugin for monorepo source code development**
+
+**Use TypeScript source code directly in browser, no build needed**
+
+[![npm version](https://img.shields.io/npm/v/vite-plugin-mono.svg?style=flat-square)](https://www.npmjs.com/package/vite-plugin-mono)
+[![license](https://img.shields.io/npm/l/vite-plugin-mono.svg?style=flat-square)](./LICENSE)
+
+[English](./README.md) · [简体中文](./README.zh-CN.md)
+
+</div>
+
+---
+
+## 💡 What is vite-plugin-mono?
+
+This is the **browser-side companion** to [mono-mjs](../mono). While `mono` handles Node.js-side module resolution (for Vite plugins, compilers, etc.), `vite-plugin-mono` handles browser-side module resolution.
+
+### Why do you need it?
+
+**Problem**: `mono` can only intercept Node.js ESM loader. Browser-side imports go through Vite's resolver, which doesn't use `mono`.
+
+**Solution**: `vite-plugin-mono` uses Vite's `resolve.alias` to redirect local packages to their source code.
+
+---
+
+## ✨ Features
+
+- 🎯 **Zero Config** - Works out of the box with `mono`
+- 🔍 **Auto Discovery** - Finds all local packages automatically
+- ⚡️ **Hot Reload** - Changes reflect immediately
+- 📦 **Compatible** - Works with npm, yarn, pnpm, bun
+
+---
+
+## 📦 Installation
+
+```bash
+npm install -D vite-plugin-mono
+```
+
+---
+
+## 🚀 Quick Start
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { viteMono } from 'vite-plugin-mono'
+
+export default defineConfig({
+  plugins: [
+    viteMono(),  // Must be first!
+    vue()
+  ]
+})
+```
+
+**That's it!** Now your browser-side imports will use source code too.
+
+---
+
+## 📚 How It Works
+
+### mono vs vite-plugin-mono
+
+| Tool | Scope | Use Case |
+|------|-------|----------|
+| **mono** | Node.js | Vite plugins, compilers, build tools |
+| **vite-plugin-mono** | Browser | Runtime code, Vue components |
+
+### Example
+
+```
+Your Project
+├── packages/
+│   ├── ui-lib/           # Local package
+│   │   ├── package.json  # { "name": "ui-lib", "local": "./src/index.ts" }
+│   │   └── src/index.ts
+│   └── app/
+│       └── src/App.vue   # import { Button } from 'ui-lib'
+└── vite.config.ts        # viteMono() redirects 'ui-lib' → source
+```
+
+---
+
+## ⚙️ Options
+
+```typescript
+viteMono({
+  // Debug mode
+  debug: false,
+  
+  // Exclude packages
+  exclude: ['some-package']
+})
+```
+
+---
+
+## 🔗 Related
+
+- [mono-mjs](../mono) - CLI tool for Node.js-side monorepo development
+
+---
+
+## 📄 License
+
+MIT © [alamhubb](https://github.com/alamhubb)
+
+---
+
+<div align="center">
+
+Made with ❤️ by [alamhubb](https://github.com/alamhubb)
+
+[Report Bug](https://github.com/alamhubb/mono/issues) · [Request Feature](https://github.com/alamhubb/mono/issues)
+
+</div>
