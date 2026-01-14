@@ -1,5 +1,5 @@
 {
-    "name": "mono",
+    "name": "mono-mjs",
     "version": "0.1.0",
     "description": "CLI tool for monorepo - auto-discover local packages and use source code in Node.js",
     "type": "module",

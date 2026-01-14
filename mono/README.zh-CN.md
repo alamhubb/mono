@@ -106,7 +106,7 @@ mono ./src/index.ts debug
 ### 1. 自动包发现
 
 ```
-项目根目录 (.idea/.vscode/.git)
+直线向上查找距离最远的项目根目录 (.idea/.vscode/.git/package.json)
   └── 递归扫描
       └── 查找所有 package.json
           └── 根据 "name" 字段注册

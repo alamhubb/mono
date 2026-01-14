@@ -106,7 +106,7 @@ mono ./src/index.ts debug
 ### 1. Auto Package Discovery
 
 ```
-Project Root (.idea/.vscode/.git)
+Find farthest project root upward (.idea/.vscode/.git/package.json)
   └── Recursive Scan
       └── Find all package.json
           └── Register by "name" field
