@@ -102,6 +102,38 @@ viteMono({
 
 ---
 
+## ⚠️ Important: vite.config.ts Limitation
+
+When Vite starts, it uses **esbuild** to compile `vite.config.ts`. During this phase:
+
+| node_modules status | esbuild behavior | mono can intercept? |
+|---------------------|------------------|---------------------|
+| Package exists with correct dist | Bundle into config | ❌ No need |
+| Package exists but dist missing | **Error!** | ❌ |
+| Package not in node_modules | Mark as external | ✅ Yes |
+
+**Key insight**: `mono` can only intercept imports in `vite.config.ts` when the package is **not** in `node_modules`.
+
+### Solution for local development
+
+If you're importing a local plugin (like `vite-plugin-cssts`) in `vite.config.ts`:
+
+1. **Option A**: Remove the package from `node_modules`:
+   ```bash
+   rm -rf node_modules/vite-plugin-cssts
+   ```
+
+2. **Option B**: Use relative path import:
+   ```typescript
+   // Instead of:
+   import cssTsPlugin from 'vite-plugin-cssts'
+   
+   // Use:
+   import cssTsPlugin from '../vite-plugin-cssts/src/index.ts'
+   ```
+
+3. **Option C**: Use `vite.config.mjs` instead of `.ts` (Node.js runs it directly without esbuild)
+
 ## 🔗 Related
 
 - [mono-mjs](../mono) - CLI tool for Node.js-side monorepo development
