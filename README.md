@@ -41,10 +41,11 @@ Project A (pnpm) → must use pnpm
 
 With Mono, you just:
 - ✅ Run `mono ./src/index.ts` - that's it!
-- ✅ **No `npm install`** - clone and run immediately
+- ✅ **No reinstall after changes** - modify local packages, run immediately
 - ✅ **No build step** - use TypeScript source directly
 - ✅ **No configuration** - auto-discovers all local packages
-- ✅ Works with npm/yarn/pnpm - your project stays standard
+- ✅ **No `workspace:*`** - your package.json stays standard
+- ✅ Works with npm/yarn/pnpm - your project stays compatible
 
 ### pnpm workspace vs Mono
 
@@ -101,7 +102,7 @@ npm install -g mono-mjs
 
 ### 2. Run your project
 
-> 💡 **No `npm install` needed for local packages!** Just clone and run.
+> 💡 **No reinstall needed!** Modify local packages and run immediately.
 
 ```bash
 # Run TypeScript directly - local packages resolved automatically

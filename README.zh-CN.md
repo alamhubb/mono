@@ -41,10 +41,11 @@ Mono 是一套**零侵入式 monorepo 开发工具**。它允许你在开发期�
 
 使用 Mono，你只需：
 - ✅ 运行 `mono ./src/index.ts` - 就这么简单！
-- ✅ **无需 `npm install`** - 克隆即可运行
+- ✅ **修改后无需重新安装** - 修改本地包，立即运行
 - ✅ **无需构建** - 直接使用 TypeScript 源码
 - ✅ **无需配置** - 自动发现所有本地包
-- ✅ 兼容 npm/yarn/pnpm - 项目保持标准结构
+- ✅ **无需 `workspace:*`** - package.json 保持标准格式
+- ✅ 兼容 npm/yarn/pnpm - 项目保持通用性
 
 ### pnpm workspace vs Mono
 
@@ -101,7 +102,7 @@ npm install -g mono-mjs
 
 ### 2. 运行项目
 
-> 💡 **本地包无需 `npm install`！** 克隆即可运行。
+> 💡 **无需重新安装！** 修改本地包后立即运行。
 
 ```bash
 # 直接运行 TypeScript - 本地包自动解析

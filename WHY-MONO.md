@@ -155,6 +155,37 @@ Mono's design philosophy is simple:
 | **Team Collaboration** | Everyone must use pnpm | No tool requirements |
 | **Publishing** | Needs special handling | Standard npm publish |
 
+### All Solutions Comparison
+
+| Solution | No Install | No Build | Zero Config | Auto Discovery | Complexity |
+|----------|:----------:|:--------:|:-----------:|:--------------:|:----------:|
+| npm native | ❌ | ❌ | ❌ | ❌ | High |
+| pnpm workspace | ✅ | ⚠️ | ❌ | ✅ | Medium |
+| tsconfig paths | ✅ | ✅ | ❌ | ❌ | Low |
+| Nx | ✅ | ✅ | ❌ | ✅ | Very High |
+| **mono** | ✅ | ✅ | ✅ | ✅ | **Minimal** |
+
+> ⚠️ = Depends on configuration
+
+### 🔄 vs npm `file:` Protocol
+
+Traditional npm local dependency:
+
+```json
+{ "my-lib": "file:../packages/my-lib" }
+```
+
+| After modifying local package | npm `file:` | mono |
+|------------------------------|:-----------:|:----:|
+| Need to run `npm install` again? | ✅ Yes | ❌ No |
+| Changes visible immediately? | ❌ No | ✅ Yes |
+
+**With `file:` protocol**, npm copies the package to `node_modules`. Every time you modify the local package, you must run `npm install` again to update the copy.
+
+**With mono**, imports are redirected to source code at runtime. No copying, no reinstalling.
+
+> 💡 **Note**: Third-party packages from npm registry still require `npm install`. The "No Install" benefit applies to **local packages** only.
+
 ### Usage: One Command
 
 ```bash
